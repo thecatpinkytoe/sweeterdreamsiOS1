@@ -1,20 +1,55 @@
 workflows:
-  build-and-export:
-    name: Build and Export IPA
-    instance_type: mac_mini_m1
+  ios-build:
+    name: iOS Build
     environment:
+      xcode: latest
       vars:
-        BUNDLE_ID: com.example.HealthExportKit
+        APP_NAME: "sweeterdreamsiOS1"
     scripts:
-      - name: Install xcodegen
+      # -------------------------------------------------------
+      # Install XcodeGen (using Homebrew — recommended method)
+      # -------------------------------------------------------
+      - name: Install XcodeGen
         script: |
-          gem install xcodeproj xcodegen
-      - name: Generate Xcode project
+          brew update
+          brew install xcodegen
+
+      # -------------------------------------------------------
+      # Generate Xcode project
+      # -------------------------------------------------------
+      - name: Run XcodeGen
         script: |
           xcodegen generate
-      - name: Build and export
+
+      # -------------------------------------------------------
+      # Install CocoaPods if your project needs it (optional)
+      # If you have a Podfile, leave this. If not, remove it.
+      # -------------------------------------------------------
+      - name: Install CocoaPods
         script: |
-          set -eux
-          xcodebuild -workspace HealthExportKit.xcworkspace -scheme HealthExportKit -configuration Release -allowProvisioningUpdates
-    artifacts:
-      - build/ipa/*.ipa
+          if [ -f "Podfile" ]; then
+            sudo gem install cocoapods
+            pod install
+          else
+            echo "No Podfile found, skipping pods"
+          fi
+
+      # -------------------------------------------------------
+      # Build the app (archive)
+      # -------------------------------------------------------
+      - name: Build iOS app
+        script: |
+          xcodebuild \
+            -workspace "${APP_NAME}.xcworkspace" \
+            -scheme "${APP_NAME}" \
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath build/${APP_NAME}.xcarchive \
+            archive | xcpretty
+
+      # -------------------------------------------------------
+      # Export IPA
+      # -------------------------------------------------------
+      - name: Export IPA
+        script: |
+          xcodebuild
