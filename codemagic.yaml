@@ -15,20 +15,20 @@ workflows:
           echo "Repo contents:"
           ls -A .
 
-    # Force CD into the directory where the repo was checked out
-    cd $CM_BUILD_DIR
+          # Force CD into the directory where the repo was checked out
+          cd $CM_BUILD_DIR
 
-    echo "Working directory after cd:"
-    pwd
-    echo "Repo contents now:"
-    ls -A .
+          echo "Working directory after cd:"
+          pwd
+          echo "Repo contents now:"
+          ls -A .
 
-    echo "==== project.yml (visible chars) ===="
-    cat -A project.yml
-    echo "===================================="
+          echo "==== project.yml (visible chars) ===="
+          cat -A project.yml
+          echo "===================================="
 
-    xcodegen generate
-    ls -R .
+          xcodegen generate
+          ls -R .
       - name: Build for device (unsigned)
         script: |
           set -o pipefail
