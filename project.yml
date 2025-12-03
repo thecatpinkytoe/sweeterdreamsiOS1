@@ -1,6 +1,9 @@
 name: SweeterDreams
+
 options:
-  bundleIdPrefix: com.example   # <-- change later to your own prefix if you want
+  bundleIdPrefix: com.example
+  minimumXcodeGenVersion: 2.38.0
+
 configs:
   Debug: debug
   Release: release
@@ -20,26 +23,20 @@ targets:
       - path: Resources
     info:
       path: Resources/Info.plist
-      properties:
-        CFBundleDisplayName: SweeterDreams
-        CFBundleIdentifier: com.example.sweeterdreams
-        UISupportedInterfaceOrientations:
-          - UIInterfaceOrientationPortrait
+    entitlements:
+      path: Resources/HealthExportKit.entitlements
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.example.sweeterdreams
       CODE_SIGN_IDENTITY: ""
       CODE_SIGNING_REQUIRED: NO
       CODE_SIGNING_ALLOWED: NO
       DEVELOPMENT_TEAM: ""
-      ENABLE_HARDENED_RUNTIME: YES
-    entitlements:
-      path: Resources/HealthExportKit.entitlements
 
 schemes:
   SweeterDreams:
     build:
       targets:
-        SweeterDreams: all
+        - SweeterDreams
     run:
       config: Debug
     archive:
