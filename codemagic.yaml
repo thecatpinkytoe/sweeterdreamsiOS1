@@ -10,10 +10,25 @@ workflows:
           brew install xcodegen || true
       - name: Generate Xcode project
         script: |
-          set -e
-          xcodegen generate
-          echo "Generated files:"
-          ls -R .
+          echo "Working directory before cd:"
+          pwd
+          echo "Repo contents:"
+          ls -A .
+
+    # Force CD into the directory where the repo was checked out
+    cd $CM_BUILD_DIR
+
+    echo "Working directory after cd:"
+    pwd
+    echo "Repo contents now:"
+    ls -A .
+
+    echo "==== project.yml (visible chars) ===="
+    cat -A project.yml
+    echo "===================================="
+
+    xcodegen generate
+    ls -R .
       - name: Build for device (unsigned)
         script: |
           set -o pipefail
