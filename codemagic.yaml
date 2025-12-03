@@ -1,36 +1,84 @@
 workflows:
   build-and-export-ios:
-    name: Build iOS unsigned (.ipa) using XcodeGen
+    name: Debug + Build iOS with XcodeGen
     max_build_duration: 30
     environment:
       xcode: latest
+
     scripts:
+
+      # --------------------------------------------
+      # 1. Debug directories + detect wrong project.yml
+      # --------------------------------------------
+      - name: Debug directories and project.yml
+        script: |
+          echo "================= DIRECTORY DEBUG ================="
+          echo "PWD (current working directory):"
+          pwd
+          echo
+          echo "CM_BUILD_DIR (Codemagic repo checkout dir):"
+          echo "$CM_BUILD_DIR"
+          echo
+          echo "CM_SOURCE_DIR:"
+          echo "$CM_SOURCE_DIR"
+          echo
+          echo "Listing PWD:"
+          ls -A .
+          echo
+          echo "Searching entire workspace for ANY project.yml/project.yaml:"
+          find / -maxdepth 6 -type f \( -name "project.yml" -o -name "project.yaml" \) 2>/dev/null
+          echo "===================================================="
+          echo
+          echo ">>>> Forcing cd into CM_BUILD_DIR"
+          cd "$CM_BUILD_DIR"
+          echo "Now in:"
+          pwd
+          echo
+          echo "Repo root contents:"
+          ls -A .
+          echo
+          echo "==== project.yml (visible whitespace) ===="
+          cat -A project.yml || echo "!!! No project.yml found here !!!"
+          echo "=========================================="
+          echo
+
+
+      # --------------------------------------------
+      # 2. Install XcodeGen
+      # --------------------------------------------
       - name: Install XcodeGen
         script: |
+          echo "Installing XcodeGen..."
           brew install xcodegen || true
+          echo "XcodeGen version:"
+          xcodegen --version
+          echo
+
+
+      # --------------------------------------------
+      # 3. Generate Xcode project
+      # --------------------------------------------
       - name: Generate Xcode project
         script: |
-          echo "Working directory before cd:"
+          echo "Generating project…"
+          cd "$CM_BUILD_DIR"
+          echo "Running XcodeGen from:"
           pwd
-          echo "Repo contents:"
-          ls -A .
-
-          # Force CD into the directory where the repo was checked out
-          cd $CM_BUILD_DIR
-
-          echo "Working directory after cd:"
-          pwd
-          echo "Repo contents now:"
-          ls -A .
-
-          echo "==== project.yml (visible chars) ===="
-          cat -A project.yml
-          echo "===================================="
-
+          echo
           xcodegen generate
+          echo
+          echo "Generated files:"
           ls -R .
+          echo
+
+
+      # --------------------------------------------
+      # 4. Build for device (unsigned)
+      # --------------------------------------------
       - name: Build for device (unsigned)
         script: |
+          cd "$CM_BUILD_DIR"
+          echo "Building..."
           set -o pipefail
           PROJECT=$(ls *.xcodeproj | head -n 1)
           echo "Detected project: $PROJECT"
@@ -40,6 +88,7 @@ workflows:
           fi
           SCHEME=$(basename "$PROJECT" .xcodeproj)
           echo "Using scheme: $SCHEME"
+
           xcodebuild \
             -project "$PROJECT" \
             -scheme "$SCHEME" \
@@ -49,21 +98,10 @@ workflows:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             build
-      - name: Package as .ipa
-        script: |
-          set -e
-          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "*Release-iphoneos" -prune -print 2>/dev/null | head -n 1)
-          if [ -z "$APP_PATH" ]; then
-            APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -type d -name "*.app" | head -n 1)
-          fi
-          if [ -z "$APP_PATH" ]; then
-            echo "ERROR: .app bundle not found."
-            exit 1
-          fi
-          mkdir -p Payload
-          cp -R "$APP_PATH" Payload/
-          zip -r SweeterDreams.ipa Payload
-          mv SweeterDreams.ipa SweeterDreams.ipa
+
+
+    # --------------------------------------------
+    # 5. Artifacts
+    # --------------------------------------------
     artifacts:
-      - SweeterDreams.ipa
-      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - $CM_BUILD_DIR/**/*.app
