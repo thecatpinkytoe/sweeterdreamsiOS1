@@ -9,8 +9,8 @@ configs:
   Release: release
 
 settings:
-  IPHONEOS_DEPLOYMENT_TARGET: 16.0
-  SWIFT_VERSION: 5.0
+  IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+  SWIFT_VERSION: "5.0"
 
 targets:
   SweeterDreams:
