@@ -1,10 +1,46 @@
-name: HealthExportKit
+name: SweeterDreams
 options:
-  bundleIdPrefix: com.example
+  bundleIdPrefix: com.example   # <-- change later to your own prefix if you want
+configs:
+  Debug: debug
+  Release: release
+
+settings:
+  IPHONEOS_DEPLOYMENT_TARGET: 16.0
+  SWIFT_VERSION: 5.0
+
 targets:
-  HealthExportKit:
+  SweeterDreams:
     type: application
     platform: iOS
-    sources: [Sources/HealthExportKit]
+    deploymentTarget: "16.0"
+    sources:
+      - path: Sources/HealthExportKit
+    resources:
+      - path: Resources
+    info:
+      path: Resources/Info.plist
+      properties:
+        CFBundleDisplayName: SweeterDreams
+        CFBundleIdentifier: com.example.sweeterdreams
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
     settings:
-      INFO_PLIST_FILE: Resources/Info.plist
+      PRODUCT_BUNDLE_IDENTIFIER: com.example.sweeterdreams
+      CODE_SIGN_IDENTITY: ""
+      CODE_SIGNING_REQUIRED: NO
+      CODE_SIGNING_ALLOWED: NO
+      DEVELOPMENT_TEAM: ""
+      ENABLE_HARDENED_RUNTIME: YES
+    entitlements:
+      path: Resources/HealthExportKit.entitlements
+
+schemes:
+  SweeterDreams:
+    build:
+      targets:
+        SweeterDreams: all
+    run:
+      config: Debug
+    archive:
+      config: Release
